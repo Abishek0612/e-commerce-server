@@ -14,6 +14,4 @@ export const isLoggedIn = (req, res, next) => {
         req.userAuthId = decodedUser?.id;
         next();
     }
-    
-
 }

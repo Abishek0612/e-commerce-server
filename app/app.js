@@ -11,7 +11,7 @@ import brandsRouter from "../routes/brandsRouter.js";
 import colorRouter from "../routes/colorRouter.js";
 import reviewRouter from "../routes/reviewRouter.js";
 import orderRoutes from "../routes/ordersRoutes.js";
-import Order from "../model/Order.js";
+import couponsRouter from "../routes/couponsRouter.js";
 //db connection
 dbConnect();
 
@@ -27,7 +27,7 @@ const endpointSecret =
 app.post(
   "/webhook",
   express.raw({ type: "application/json" }),
-async  (request, response) => {
+  async (request, response) => {
     const sig = request.headers["stripe-signature"];
 
     let event;
@@ -49,18 +49,19 @@ async  (request, response) => {
       const paymentMethod = session.payment_method_types[0];
       const totalAmount = session.amount_total;
       const currency = session.currency;
-     //find the order
-     const order = await Order.findByIdAndUpdate(orderId, 
-      JSON.parse(orderId),
-      {
-      totalPrice: totalAmount/100,
-      currency: paymentMethod, 
-      paymentStatus, 
-     },
-     {
-      new: true,
-     })
-     console.log(order);
+      //find the order
+      const order = await Order.findByIdAndUpdate(
+        JSON.parse(orderId),
+        {
+          totalPrice: totalAmount / 100,
+          currency,
+          paymentMethod,
+          paymentStatus,
+        },
+        {
+          new: true,
+        });
+      console.log(order);
     } else {
       return;
     }
@@ -91,6 +92,7 @@ app.use("/api/v1/brands/", brandsRouter);
 app.use("/api/v1/colors/", colorRouter);
 app.use("/api/v1/reviews/", reviewRouter);
 app.use("/api/v1/orders/", orderRoutes);
+app.use('/api/v1/coupons/' ,couponsRouter)
 
 //err middware
 app.use(notFound);
