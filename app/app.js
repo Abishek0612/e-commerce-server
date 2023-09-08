@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 dotenv.config();
 import Stripe from "stripe";
 import dbConnect from "../config/dbConnect.js";
@@ -12,10 +13,14 @@ import colorRouter from "../routes/colorRouter.js";
 import reviewRouter from "../routes/reviewRouter.js";
 import orderRoutes from "../routes/ordersRoutes.js";
 import couponsRouter from "../routes/couponsRouter.js";
+
 //db connection
 dbConnect();
 
 const app = express();
+
+//cors
+app.use(cors());
 
 //Stripe webhook
 const stripe = new Stripe(process.env.STRIPE_KEY);
@@ -60,7 +65,8 @@ app.post(
         },
         {
           new: true,
-        });
+        }
+      );
       console.log(order);
     } else {
       return;
@@ -85,14 +91,14 @@ app.post(
 app.use(express.json());
 
 //routes
-app.use("/api/v1/users/", userRoutes);
-app.use("/api/v1/products/", productRouter);
-app.use("/api/v1/categories/", categoriesRouter);
-app.use("/api/v1/brands/", brandsRouter);
-app.use("/api/v1/colors/", colorRouter);
-app.use("/api/v1/reviews/", reviewRouter);
-app.use("/api/v1/orders/", orderRoutes);
-app.use('/api/v1/coupons/' ,couponsRouter)
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/products", productRouter);
+app.use("/api/v1/categories", categoriesRouter);
+app.use("/api/v1/brands", brandsRouter);
+app.use("/api/v1/colors", colorRouter);
+app.use("/api/v1/reviews", reviewRouter);
+app.use("/api/v1/orders", orderRoutes);
+app.use("/api/v1/coupons", couponsRouter);
 
 //err middware
 app.use(notFound);
