@@ -1,11 +1,11 @@
 import Order from "../model/Order.js";
 import dotenv from "dotenv";
-dotenv.config()
+dotenv.config();
 import Stripe from "stripe";
 import asyncHandler from "express-async-handler";
 import User from "../model/User.js";
 import Product from "../model/Product.js";
-import Coupon from "../model/Coupon.js";
+// import Coupon from "../model/Coupon.js";
 
 //@desc create orders
 //@route POST/api/v1/orders
@@ -16,20 +16,21 @@ const stripe = new Stripe(process.env.STRIPE_KEY);
 
 export const createOrderCtrl = asyncHandler(async (req, res) => {
   // //get teh coupon
-  const { coupon } = req?.query;
+  //This coupon logic is for API development we handle it in the frontend so we commented it
+  // const { coupon } = req?.query;
 
-  const couponFound = await Coupon.findOne({
-    code: coupon?.toUpperCase(),
-  });
-  if (couponFound?.isExpired) {
-    throw new Error("Coupon has expired");
-  }
-  if (!couponFound) {
-    throw new Error("Coupon does exists");
-  }
+  // const couponFound = await Coupon.findOne({
+  //   code: coupon?.toUpperCase(),
+  // });
+  // if (couponFound?.isExpired) {
+  //   throw new Error("Coupon has expired");
+  // }
+  // if (!couponFound) {
+  //   throw new Error("Coupon does exists");
+  // }
 
   //get discount
-  const discount = couponFound?.discount / 100;
+  // const discount = couponFound?.discount / 100;  (we are going to do the calculation in client side)
 
   //Get the payload(customer, orderItems, shippingAddress, totalPrice);
   const { orderItems, shippingAddress, totalPrice } = req.body;
@@ -54,9 +55,10 @@ export const createOrderCtrl = asyncHandler(async (req, res) => {
     user: user?._id,
     orderItems,
     shippingAddress,
-    totalPrice: couponFound ? totalPrice - totalPrice * discount : totalPrice,
+    totalPrice,
+    // totalPrice: couponFound ? totalPrice - totalPrice * discount : totalPrice,
   });
-  console.log(order)
+  console.log(order);
 
   //Update the product qty
   const products = await Product.find({ _id: { $in: orderItems } });
@@ -99,9 +101,7 @@ export const createOrderCtrl = asyncHandler(async (req, res) => {
   });
 
   res.send({ url: session.url });
-
-})
-
+});
 
 //@desc get all orders
 //@route GET/api/v1/orders
@@ -109,13 +109,13 @@ export const createOrderCtrl = asyncHandler(async (req, res) => {
 
 export const getAllordersCtrl = asyncHandler(async (req, res) => {
   //find all orders
-  const orders = await Order.find();
+  const orders = await Order.find().populate("user");
   res.json({
     success: true,
-    message: 'All orders',
-    orders
-  })
-})
+    message: "All orders",
+    orders,
+  });
+});
 
 //@desc get single orders
 //@route Get/api/orders/:id
@@ -128,11 +128,10 @@ export const getSingleOrderCtrl = asyncHandler(async (req, res) => {
   //send response
   res.json({
     success: true,
-    message: 'Single order',
-    orders
-  })
-})
-
+    message: "Single order",
+    orders,
+  });
+});
 
 //@desc update order to deliver
 //@route PUT/api/v1/orders/update/:id
@@ -142,20 +141,21 @@ export const getSingleOrderCtrl = asyncHandler(async (req, res) => {
 export const updateOrderCtrl = asyncHandler(async (req, res) => {
   const id = req.params.id;
   //update
-  const updateOrder = await Order.findByIdAndUpdate(id,
+  const updateOrder = await Order.findByIdAndUpdate(
+    id,
     {
       status: req.body.status,
-    }, {
-    new: true,
-  }
-  )
+    },
+    {
+      new: true,
+    }
+  );
   res.status(200).json({
     success: true,
-    message: 'Order updated',
-    updateOrder
-  })
-})
-
+    message: "Order updated",
+    updateOrder,
+  });
+});
 
 //@desc get sales sum of orders
 //@route Get /api/v1/orders/sales/sum
@@ -172,14 +172,14 @@ export const getOrderStatsCtrl = asyncHandler(async (req, res) => {
           $min: "$totalPrice",
         },
         totalSales: {
-          $sum: "$totalPrice"
+          $sum: "$totalPrice",
         },
         maximumSale: {
-          $max: "$totalPrice"
+          $max: "$totalPrice",
         },
         avgSale: {
           $avg: "$totalPrice",
-        }
+        },
       },
     },
   ]);
@@ -192,56 +192,26 @@ export const getOrderStatsCtrl = asyncHandler(async (req, res) => {
       $match: {
         createdAt: {
           $gte: today,
-        }
-      }
+        },
+      },
     },
     {
       $group: {
         _id: null,
         totalSales: {
-          $sum: "$totalPrice"
-        }
-      }
-    }
-  ])
+          $sum: "$totalPrice",
+        },
+      },
+    },
+  ]);
 
   //send response
   res.status(200).json({
     success: true,
     message: "Sum of orders",
     orders,
-    saleToday
-  })
-})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    saleToday,
+  });
+});
 
 // Your webhook signing secret is whsec_a26783484c7cba6d11f94abbd16dd423f9a03d3fc167a908386494ff10ac615d (^C to quit)

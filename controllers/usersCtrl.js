@@ -43,7 +43,10 @@ export const loginUserCtrl = asyncHandler(async (req, res) => {
     res.json({
       status: "success",
       message: "User logged in successfully",
-      userFound,
+      // userFound: {
+      //   fullname: userFound?.fullname,
+      //   isAdmin: userFound?.isAdmin,
+      // },
       token: generateToken(userFound?._id),
     });
   } else {
@@ -57,13 +60,13 @@ export const loginUserCtrl = asyncHandler(async (req, res) => {
 
 export const getUserProfileCtrl = asyncHandler(async (req, res) => {
   //find  the user
-  const user = await User.findById(req.userAuthId).populate("orders")
-// console.log(user)
-res.json({
-  status:'success',
-  message:'user profile fetched successfully',
-  user
-})
+  const user = await User.findById(req.userAuthId).populate("orders");
+  // console.log(user)
+  res.json({
+    status: "success",
+    message: "user profile fetched successfully",
+    user,
+  });
 });
 
 //@desc Update user shipping address
@@ -101,8 +104,8 @@ export const updateShippingAddressCtrl = asyncHandler(async (req, res) => {
     }
   );
   res.json({
-    status:"success",
-    message:"User shipping address updated successfully",
+    status: "success",
+    message: "User shipping address updated successfully",
     user,
-  })
+  });
 });
