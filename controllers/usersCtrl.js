@@ -43,10 +43,10 @@ export const loginUserCtrl = asyncHandler(async (req, res) => {
     res.json({
       status: "success",
       message: "User logged in successfully",
-      // userFound: {
-      //   fullname: userFound?.fullname,
-      //   isAdmin: userFound?.isAdmin,
-      // },
+      userFound: {
+        fullname: userFound?.fullname,
+        isAdmin: userFound?.isAdmin,
+      },
       token: generateToken(userFound?._id),
     });
   } else {

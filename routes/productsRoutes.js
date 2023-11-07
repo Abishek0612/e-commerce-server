@@ -10,9 +10,9 @@ import isAdmin from '../middlewares/isAdmin.js';
 const productRouter = express.Router()
 
 productRouter.post("/", isLoggedIn, isAdmin, upload.array("files"), createProductCtrl)
-productRouter.get("/", isLoggedIn, getProductsCtrl)
+productRouter.get("/", getProductsCtrl)
 productRouter.get("/:id", getProductCtrl);
 productRouter.put("/:id", isLoggedIn,isAdmin, updateProductCtrl);
-productRouter.delete("/:id/delete",isAdmin, isLoggedIn, deleteProductCtrl);
+productRouter.delete("/:id/delete",  isLoggedIn,isAdmin, deleteProductCtrl);
 
 export default productRouter;
