@@ -33,18 +33,26 @@ export const createOrderCtrl = asyncHandler(async (req, res) => {
   // const discount = couponFound?.discount / 100;  (we are going to do the calculation in client side)
 
   //Get the payload(customer, orderItems, shippingAddress, totalPrice);
-  const { orderItems, shippingAddress, totalPrice } = req.body;
+  const { orderItems, totalPrice } = req.body;
+
+  
   // console.log({
   //   orderItems,
   //   shippingAddress,
   //   totalPrice,
   // });
   //find the user
-  const user = await User.findById(req.userAuthId);
-  //Check if user has shipping address
-  if (!user?.hasShippingAddress) {
-    throw new Error("Please provide shipping address");
+    // Find the user and include the shippingAddress in the response
+    const user = await User.findById(req.userAuthId).select('+shippingAddress');
+
+
+  // Check if user has a shipping address or if it's provided in the request body
+  const shippingAddress = req.body.shippingAddress || user.shippingAddress;
+
+  if (!shippingAddress) {
+    throw new Error("Shipping address is required.");
   }
+
 
   //check if order is not empty
   if (orderItems?.length <= 0) {
@@ -54,7 +62,8 @@ export const createOrderCtrl = asyncHandler(async (req, res) => {
   const order = await Order.create({
     user: user?._id,
     orderItems,
-    shippingAddress,
+    shippingAddress, // This now comes from above logic
+
     totalPrice,
     // totalPrice: couponFound ? totalPrice - totalPrice * discount : totalPrice,
   });
@@ -116,6 +125,8 @@ export const getAllordersCtrl = asyncHandler(async (req, res) => {
     orders,
   });
 });
+
+
 
 //@desc get single orders
 //@route Get/api/orders/:id
